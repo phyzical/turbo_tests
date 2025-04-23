@@ -89,8 +89,6 @@ module TurboTests
           **group_opts
         )
 
-      setup_tmp_dir
-
       subprocess_opts = {
         record_runtime: use_runtime_info,
       }
@@ -115,15 +113,6 @@ module TurboTests
 
     private
 
-    def setup_tmp_dir
-      begin
-        FileUtils.rm_r("tmp/test-pipes")
-      rescue Errno::ENOENT
-      end
-
-      FileUtils.mkdir_p("tmp/test-pipes/")
-    end
-
     def start_regular_subprocess(tests, process_id, **opts)
       start_subprocess(
         {"TEST_ENV_NUMBER" => process_id.to_s},
@@ -145,7 +134,9 @@ module TurboTests
         env["RUBYOPT"] = ["-I#{File.expand_path("..", __dir__)}", ENV["RUBYOPT"]].compact.join(" ")
         env["RSPEC_SILENCE_FILTER_ANNOUNCEMENTS"] = "1"
 
-        if ENV["BUNDLE_BIN_PATH"]
+        if ENV["RSPEC_EXECUTABLE"]
+          command_name = ENV["RSPEC_EXECUTABLE"].split
+        elsif ENV["BUNDLE_BIN_PATH"]
           command_name = [ENV["BUNDLE_BIN_PATH"], "exec", "rspec"]
         else
           command_name = "rspec"
